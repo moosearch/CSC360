@@ -1,0 +1,8 @@
+Mark: 89/100
+
+    Code [70%]
+        Part a, didn't track the number of writers, -3
+    Documentation [30%]
+        Doxygen and coding style, more comments expected, -3
+        Descriptions of tests performed, no test description, -5
+        Answer to questions [10%]

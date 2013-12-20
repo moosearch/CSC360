@@ -1,0 +1,8 @@
+Mark: 95/100
+
+    Code [70%]
+        Part a, when change the starting point of disk head, DiskCSCAN didn't give the right write outputs, -5 
+    Documentation [30%]
+        Doxygen and coding style (The solution should not be overly convoluted) [10%]
+        Descriptions of tests performed, good test cases!
+        Answer to questions [10%]

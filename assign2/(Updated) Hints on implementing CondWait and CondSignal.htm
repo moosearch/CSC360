@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <title>Announcements</title>
+    <link href="%28Updated%29%20Hints%20on%20implementing%20CondWait%20and%20CondSignal_files/tool_base.css" type="text/css" rel="stylesheet" media="all">
+<link href="%28Updated%29%20Hints%20on%20implementing%20CondWait%20and%20CondSignal_files/tool.css" type="text/css" rel="stylesheet" media="all">
+<script type="text/javascript" language="JavaScript" src="%28Updated%29%20Hints%20on%20implementing%20CondWait%20and%20CondSignal_files/headscripts.js"></script>
+<script type="text/javascript" language="JavaScript">var sakai = sakai || {}; sakai.editor = sakai.editor || {}; 
+sakai.editor.collectionId = '/group/56ea8ff6-127b-4c7e-aeb0-f1617998af8a/';
+sakai.editor.enableResourceSearch = false;</script>
+<script type="text/javascript" language="JavaScript">var CKEDITOR_BASEPATH='/library/editor/ckeditor/';
+</script>
+<script type="text/javascript" language="JavaScript" src="%28Updated%29%20Hints%20on%20implementing%20CondWait%20and%20CondSignal_files/ckeditor_002.js"></script>
+<script type="text/javascript" language="JavaScript" src="%28Updated%29%20Hints%20on%20implementing%20CondWait%20and%20CondSignal_files/ckeditor.js"></script>
+	
+    
+    	            
+    
+  </head>
+  <body onpageshow='event.persisted &amp;&amp; (function(){var allInstances = CKEDITOR.instances, editor, doc;for ( var i in allInstances ){	editor = allInstances[ i ];	doc = editor.document;	if ( doc )	{		doc.$.designMode = "off";		doc.$.designMode = "on";	}}})();' onload="setMainFrameHeight('Maine64c7fdexd732x4715xa84axaf42bcc47c20');setFocus(focus_path);">
+<!-- $Header: /cvs/sakai2/legacy/tools/src/webapp/vm/announcement/chef_announcements-metadata.vm,v 1.7 2005/05/15 17:02:52 gsilver.umich.edu Exp $ -->
+
+<script language="JavaScript" type="text/JavaScript">
+<!--
+	function change_parent_url(url)
+	{
+	  parent.location=url;
+	}		
+//-->
+</script>
+<div class="portletBody">
+		
+		<form name="formII" action="https://connex.csc.uvic.ca/portal/tool/e64c7fde-d732-4715-a84a-af42bcc47c20?panel=Main" method="post">
+		<div class="navPanel">
+			<div class="itemNav">
+									<input name="eventSubmit_doPrev_message" class="prev" accesskey="p" value="&lt; Previous" type="submit">
+								<input name="eventSubmit_doLinkcancel" value="Return to List" class="toList" accesskey="l" type="submit">
+									<input name="eventSubmit_doNext_message" value="Next &gt;" class="next" accesskey="n" type="submit">
+							</div>
+		</div>
+	</form>
+		<h3>
+		Announcement
+	</h3>	
+		<table class="itemSummary" cellspacing="0">
+		<tbody><tr>
+			<th>Subject</th>
+			<td>(Updated) Hints on implementing CondWait and CondSignal</td>
+		</tr>
+		<tr>
+			<th>Saved By</th>
+			<td>Mantis Cheng</td>
+		</tr>
+		
+		<tr>
+			<th>Modified Date</th>
+			<td>
+							Jun 15, 2013 1:26 pm
+						</td>
+		</tr>
+		
+		<tr>
+			<th>Beginning Date</th>
+							<td></td>
+				</tr>
+		
+		<tr>
+			<th>Ending Date</th>
+							<td></td>
+				</tr>
+
+					<tr>
+				<th>Groups</th>
+				<td>site</td>
+			</tr>
+					</tbody></table>
+	<h4>
+		Message
+	</h4>
+	<p></p><p>
+	The concept of a monitor is implemented in C (e.g., pthread) using "mutex" and "condition".</p>
+<p>
+	A "mutex" is essentially a binary semaphore with ownership.</p>
+<p>
+	A "condition" is just a waiting queue.</p>
+<p>
+	We use a "mutex" as a guarantee of mutual exclusion inside a monitor. 
+The "condition" queues are purely for synchronization, e.g., waiting and
+ signalling.</p>
+<p>
+	The code structure of a monitor looks something like this:</p>
+<p>
+	method put( ... ) { &nbsp;</p>
+<p>
+	&nbsp; lock( m );</p>
+<p>
+	&nbsp; &nbsp; ... &nbsp; condwait( c, m ); &nbsp;// waiting for the condition "c"&nbsp;</p>
+<p>
+	&nbsp; unlock(m);</p>
+<p>
+	}</p>
+<p>
+	method get( ... ) {</p>
+<p>
+	&nbsp; lock( m );</p>
+<p>
+	&nbsp; &nbsp;... &nbsp;condsignal( c ); &nbsp;// resume a task waiting on "c"</p>
+<p>
+	&nbsp; unlock( m );</p>
+<p>
+	}</p>
+<p>
+	"condwait( c, m )" is equivalent to &lt;unlock(m); wait( c ); lock(m) 
+&gt; atomically as a single instruction. That is, the task must first 
+release the lock "m", wait on the queue associated with "c", then relock
+ "m" before continuing.</p>
+<p>
+	The &lt;unlock(m); wait(c)&gt; will be implemented by "condwait()"; but
+ the &lt;lock(m)&gt; again must be done later when "condsignal()" is 
+invoked. You must remember which "m" should be relocked. And the resumed
+ task will re-acquire the mutex "m" when the signalling task eventually 
+execute "unlock(m)".</p>
+<p>
+	Please read and reread the last two sentences carefully!</p>
+<p>
+	When a thread waits on a mutex, it enters a "BLOCK-ON-MUTEX" state. 
+When a thread waits on a condition, it enters a "BLOCK-ON-COND" state. 
+These states are mutually exclusive; a thread cannot wait on a mutex and
+ a condition at the same time.</p>
+<p>
+	As noted above, when a thread executes "condwait(c,m)", it must unlock 
+its mutex lock and then enters the condition queue, i.e., enters the 
+BLOCK-ON-COND state. When it is signalled later, it must relock the 
+mutex again before continuing. Since the signalling thread (i.e., 
+calling "condsignal(c)") hasn't unlock the mutex yet, the signalled 
+thread (BLOCK-ON-COND) must reacquire the lock later when the mutex is 
+unlocked; as a result the signalled thread goes from BLOCK-ON-COND to 
+BLOCK-ON-MUTEX state!!! (**** <span style="color:#ff0000;">THIS IS THE MOST IMPORTANT HINT!</span> ****)</p>
+<p>
+	M. Cheng</p><p></p>
+			
+	<form name="formII" action="https://connex.csc.uvic.ca/portal/tool/e64c7fde-d732-4715-a84a-af42bcc47c20?panel=Main" method="post">
+		<div class="navPanel">
+			<div class="itemNav">
+									<input name="eventSubmit_doPrev_message" value="&lt; Previous" type="submit">
+								<input name="eventSubmit_doLinkcancel" value="Return to List" type="submit">
+									<input name="eventSubmit_doNext_message" value=" Next &gt;" type="submit">
+							</div>
+		</div>	
+	</form>
+
+</div>
+
+</body></html>

@@ -1,0 +1,102 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><h1>CSc 360 Assignment #4</h1>
+<p><strong>Due date: 11:59pm, Wednesday, 07 August 2013</strong></p>
+<hr>
+<hr>
+<h2>Objectives</h2>
+<p>In this assignment, you will:</p>
+<ol>
+<li>extend assignment 3 to include disk block caching;</li>
+<li>implement the Least Recently Used (<strong>LRU</strong>) and Least Frequently Used (<strong>LFU</strong>) cache algorithms;</li>
+<li>create test cases to evaluate/verify your approaches; and<br></li>
+<li>complete a report describing your solution and tests.</li>
+</ol>
+<hr>
+<h2>Problem</h2>
+<p>This assignment is to be completed entirely in Java (no C coding). It differs from previous assignments in a few ways:</p>
+<ul>
+<li>you are given much more freedom over your approach to the assigned problems;</li>
+<li>testing is an important component;</li>
+<li>you must submit a 2-page report in pdf, doc or html format (no Doxygen, inline comments do not count).</li>
+</ul>
+<p>These changes are reflected in the marking scheme, so be sure to review the <em>Evaluation</em> section.</p>
+<h3>Disk Cache [60%]</h3>
+<p>The goal of this assignment is to create a disk cache for the disk of
+ assignment 3. A disk cache can allow us to avoid the large seek times 
+we observed in assignment 3 by keeping a small cache of entries we have 
+already viewed. Caching is one of the best ways to improve performance 
+for a system. Many commerical operating systems use disk cache (or 
+called buffer cache) heavily to reduce disk accesses.</p>
+<p>Eventually as items are added to the cache, the cache fills up. When 
+that happens an item in the cache must be replaced. Which item should be
+ replaced? This problem leads to various solutions falling under <em>cache algorithms.</em> In this assignment we want you to complete two:</p>
+<ul>
+</ul><ol><li>Least Recently Used (LRU) (30%): the least recently used cache item is discarded first.</li><li>Least Frequently Used (LFU) (30%) : the cache item that has been accessed the least in the past is discarded first.</li>
+</ol>
+<p>The design and implementation of how you go about completing and testing these two algorithms is left to you.</p>
+<p>Writing into a disk block when dealing with disk cache has its own 
+set of issues. The simplest approach is to simply write immediately 
+"through" into the disk. An alternative, and sometimes more effective 
+approach, is to delay writing until the cache item is removed (i.e. mark
+ it dirty first, and then write it "back" when replaced). The choice for
+ which approach is left to you.</p>
+<p>The empty files <em>DiskLRU.java</em> and <em>DiskLFU.java</em> file are provided for you to get started. They extend <em>DiskFCFS</em> for the sake of simplicity, but feel free to inherit to your previous solution of <em>DiskSSTF</em> (just make sure to include the <em>DiskSSTF.java</em> in your submission). In addition, two <em>VERY</em>
+ simple test cases are provided to highlight the performance increases 
+caching can provide. The bin files for them can be found in the <em>soln</em> folder.</p>
+<p><strong>Note:</strong> To keep things fair, the cache size should be 16.</p>
+<p><strong>Hint:</strong> Wondering where to start? Extend/Reimplement the <em>read()</em> function from <em>DiskScheduler</em>.</p>
+<hr>
+<h3>Report [20%]</h3>
+<p>This assignment requires you to write a report. In the report, you need to clearly explain your solution and testing.</p>
+<p>Specifically, it must include<br></p>
+<ul>
+<li>a description of your approach including the data structures you used;</li>
+<li>a discussion of the performance bounds of different aspects of your approach;</li>
+<li>a discussion of the tests that you created, what they evaluate/demonstrate and their results.</li>
+</ul>
+<p>The report should be approximately two pages. You may submit it in 
+pdf, doc or html format. Feel free to include diagrams or graphs to help
+ explain your solution.</p>
+<p><strong> Please put your report inside the <em>assign4/report</em> folder.</strong></p>
+<hr>
+<h2>Evaluation</h2>
+<p>The assignment is to be done in teams of two. Each member will receive the same mark. Each team
+member should understand all aspects of the assignment. It is <strong>HIGHLY</strong> recommended that team
+members do the assignment together.</p>
+<p>Your evaluation will be based mostly on the correctness of your solutions (60%).
+Testing is one way to evaluate your correctness and you will be evaluated on it (20%).
+Even if your code runs, there may still be errors which can only be
+uncovered by inspection. Obscured programming tricks and habits will
+make programs harder to understand. Keep everything simple and elegant!</p>
+<p>The report counts for a significant part of the assignment (20%), so 
+make sure to put some effort
+into it. The main evaluation for the report is how well you explain what
+ you have done. Assume the audience for the report is fellow students.</p>
+<p><strong>NOTE: There is no Doxygen in this assignment. That said, 
+please include some basic comments in your Java code to assist the 
+marker in quickly understanding your code.</strong></p>
+<ul>
+<li>Code [60%]</li>
+<li>Testing [20%]</li>
+<li>Report [20%]</li>
+</ul>
+<hr>
+<h2>Submission</h2>
+<p>Most of your answers will be in the report, so please include 
+references in your report to critical aspects of your code (helpful for 
+the marker and you).</p>
+<p>Please include all necessary makefiles in each directory to generate 
+the executables and make sure that "make clean; make" will rebuild 
+your solutions to each part in each subdirectories. </p>
+<p>Submit a zipped file with the name <em>assignment4.tgz</em>.</p>
+<p>assign4 should keep the structure of</p>
+<ul>
+<li>assign4<ul>
+<li>code</li>
+<li>report</li>
+</ul>
+</li>
+</ul>
+<p>To do this go into cygwin and navigate to the path above assign4 and enter:</p>
+<pre><code>    tar czvf assignment4.tgz assign4<br></code></pre>
+<p>Please submit this file (<strong>assignment4.tgz</strong>) electronically through Connex before midnight on the due date. <strong>Only one team member needs to submit.</strong></p></body></html>

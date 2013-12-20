@@ -1,0 +1,751 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+
+
+  
+  
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+  <title>ROSE Summary</title>
+
+  
+
+  
+  
+  
+  <meta content="Mantis Cheng" name="author">
+</head>
+
+<body style="width: 850px;">
+
+<h1 style="width: 916px;">
+ROSE (A <span style="color: red;">R</span>eal Time Java Based <span style="color: red;">OS</span> <span style="color: red;">E</span>mulator)</h1>
+
+
+<span style="font-weight: bold;">Date</span>: 5 May 2013<br>
+
+
+<br>
+
+
+<span style="font-weight: bold;">Contents</span><br>
+
+
+<ol id="mozToc">
+
+
+<!--mozToc h2 1 h3 2-->
+  <li><a href="#mozTocId984671">Section 1) Introduction</a></li>
+
+  <li><a href="#mozTocId602150">Section 2) Using ROSE</a></li>
+
+  <li><a href="#mozTocId192100">Section 3) Changes made to Simple RTJ
+JVM</a>
+    
+    <ol>
+
+      <li><a href="#mozTocId951555">1) Timing Facility</a></li>
+
+      <li><a href="#mozTocId955154">2) Native Methods for Concurrency
+Support</a></li>
+
+      <li><a href="#mozTocId357293">3) Scheduling and Concurrency
+Primitives</a></li>
+
+    
+    </ol>
+
+  </li>
+
+  <li><a href="#mozTocId823159">Section 4 Configurating ROSE</a></li>
+
+</ol>
+
+
+<br>
+
+
+<h2><a class="mozTocH2" name="mozTocId984671"></a>
+Section 1) Introduction</h2>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+ROSE was designed as a pedagogical tool to teach operating system and
+concurrency concepts in C and Java. ROSE is not intended to be
+compatible with the standard Java's concurrency model. Instead, it
+replaces Java with a totally different model of concurrency. Its aim is
+to show how "new" concurrency support could be added in a language
+runtime
+system such as Java. We simplify the basic model of Java thread, i.e.,
+we only include what is necessary to create, start and stop threads. We
+add a scheduler and a set of concurrent primitives implemented by
+native C methods inside our JVM. The basic JVM (written in C) remains
+mostly unchanged. In order to
+support pre-emptive scheduling, we add a processor dependent timing
+facility to provide a millisecond accurate software interrupt. That is,
+our JVM is "interrupted" every millisecond and passes its control
+to the scheduler. The scheduler then decides which runnable thread is
+eligible to execute next. Since the JVM is a simple stack-based virtual
+machine, context switching is drastically simplified; we only need to
+save and restore the current VM's program counter and stack pointer.<br>
+
+</div>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+The concepts and implementation of a concurrent runtime system are
+quite similar to those supported by an OS or by a "thread" package. An
+application in ROSE will be written in standard Java. We use a standard
+SUN JDK to develop and compile our application code. To keep the JVM
+size small, we have chosen the <a href="http://www.rtjcom.com/main.php?p=home" target="_blank">SimpleRTJ
+JVM</a> because it uses a
+"statically-linked" architecture to execute Java byte code. As such,
+<span style="font-weight: bold;">ROSE doesn't support dynamic loading
+of class files.</span> All Java
+application code (i.e., all class files) must be linked into a single
+binary image (a ".bin" file). This image will be loaded into memory in
+its entirety for
+execution.<br>
+
+<br>
+
+ROSE is not designed for developing complete Java applications; it
+doesn't provide any Java libraries other than those we need for our
+assignments and project, e.g. a basic Java i/o library. <br>
+
+</div>
+
+
+<br>
+
+
+<br>
+
+
+<h2><a class="mozTocH2" name="mozTocId602150"></a>
+Section 2) Using ROSE</h2>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+ROSE does not use any standard thread support in Java. Instead, it
+defines its own thread model and concurrency primitives. Furthermore,
+ROSE uses a totally different scheduling policy.<br>
+
+<br>
+
+We define a collection of "<span style="font-family: monospace;">uvic</span>"
+ROSE specific packages. At this
+moment, under the "<span style="font-family: monospace;">./lib-source</span>"
+directory, you'll find our Java
+library code under "<span style="font-family: monospace;">uvic/posix</span>"
+for the package "<span style="font-family: monospace;">uvic.posix</span>".
+The
+<span style="font-family: monospace;">uvic.posix</span> package defines
+4 classes: Thread, Mutex, Semaphore and
+Condition.&nbsp; These classes are all implemented in C inside the ROSE
+JVM [in the "<span style="font-family: monospace;">./rose</span>"
+directory]. (See below about how to change/add
+primitives in ROSE.)<br>
+
+<br>
+
+ROSE currently supports 4 scheduling levels: SYSTEM (0), REAL_TIME (1),
+USER (2) and DAEMON(3). SYSTEM is the highest level. When "main()" is
+started, it runs as a SYSTEM level thread.<br>
+
+<br>
+
+SYSTEM and DAEMON level threads are FCFS. REAL_TIME and USER level
+threads are time-sliced, with 1 and 2 ticks respectively. A tick is
+given at the command line of ROSE. The command<br>
+
+</div>
+
+
+<p><span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;</span> <span style="font-family: monospace;">rose
+10 &lt;appl&gt;.bin</span></p>
+
+
+<div style="text-align: justify;">
+starts ROSE with a quantum of 10 milliseconds.<br>
+
+<br>
+
+To use threads, you must import the "<span style="font-family: monospace;">uvic.posix</span>" package. Since the
+standard Java also defines a Thread class, you need to specify
+"<span style="font-family: monospace;">uvic.posix.Thread</span>" to use
+ROSE's threads.<br>
+
+<br>
+
+To use the JDK javac compiler, please specify the following CLASSPATH:<br>
+
+</div>
+
+
+<p>
+<span style="font-family: monospace;">.:../lib/ClassLinker.jar;../lib/uvic.jar;../lib/java.jar;../lib</span></p>
+
+
+<div style="text-align: justify;">
+We'll use the Simple RTJ ClassLinker to link all compiled class files
+into a single binary image. The ClassLinker requires a per-application
+control file. If your application is called "test.java", which defines
+the main() method, then you need a "<span style="font-weight: bold;">test.control</span>"
+file. There are many
+options in the control file. The most important one is the
+"LinkClassPath", which should include<br>
+
+</div>
+
+
+<p>
+<span style="font-family: monospace;">.;../lib/java.jar;../lib/uvic.jar</span></p>
+
+
+<div style="text-align: justify;">
+Currently, ROSE was developed using GCC and Cygwin under Windows
+(NT/2000/XP). The executable "<span style="font-family: monospace;">rose.exe</span>"
+generated by GCC/Cygwin <span style="font-weight: bold;">MUST</span>
+be
+run under Cygwin shell window, not inside a DOS command window. All
+makefiles, GCC compiler, and JDK javac compiler have been tested using
+Cygwin. You should not
+need any additional tools.<br>
+
+</div>
+
+
+<br>
+
+
+ROSE uses the following directory structure:<br>
+
+
+<br>
+
+
+<span style="font-family: monospace;">
+./rose</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- the source
+code and
+binary executable of "rose"<br>
+
+
+<span style="font-family: monospace;">
+./lib&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --
+precompiled
+and archived Java class libraries<br>
+
+
+<span style="font-family: monospace;">
+./lib-source</span>&nbsp; -- the Java libary source files, including
+uvic.posix<br>
+
+
+<span style="font-family: monospace;">
+./test1&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- a simple Java
+program
+for testing "rose"<br>
+
+
+<br>
+
+
+Each directory has its own "makefile". Please consult for details.<br>
+
+
+<br>
+
+
+<h2><a class="mozTocH2" name="mozTocId192100"></a>
+Section 3) Changes made to Simple RTJ JVM</h2>
+
+
+<div style="text-align: justify;">
+In the following, we summarize the changes made to SimpleRTJ JVM to
+build ROSE. There are basically three areas of modification:<br>
+
+<ol>
+
+  <li>timing (not the interval asynchronous event timer);</li>
+
+  <li>native methods for concurrency support; and</li>
+
+  <li>thread scheduling and concurrency primitives.<br>
+
+  </li>
+
+</ol>
+
+</div>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+No changes were made to byte code interpreter (<span style="font-family: monospace;">j_bcode.c</span>), garbage
+collection (<span style="font-family: monospace;">j_gc.c</span>),
+floating point support (<span style="font-family: monospace;">j_float.c</span>),
+and heap
+memory management (<span style="font-family: monospace;">j_mem.c</span>).<br>
+
+</div>
+
+
+<br>
+
+
+<h3><a class="mozTocH3" name="mozTocId951555"></a>
+1) Timing Facility</h3>
+
+
+<div style="text-align: justify;">To support millisecond accurate
+software timer interrupt, we chose to
+use the Pentium processor's profiling clock. Reading the processor's
+profiling clock requires little overhead. Internally, we maintain a
+64-bit global<br>
+
+</div>
+
+
+<br>
+
+
+&nbsp;&nbsp;&nbsp; <span style="font-family: monospace;">long long
+vm_time_ms;&nbsp; [in j_vars.c, jcommon.h]</span><br>
+
+
+<br>
+
+
+as our ROSE VM clock. This clock is updated whenever the function<br>
+
+
+<br>
+
+
+&nbsp;&nbsp;&nbsp;<span style="font-family: monospace;">
+UpdateVMTimer();&nbsp;&nbsp; [in timer.c]</span><br>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+is called. The function <span style="font-family: monospace;">InitVMTimer()
+[timer.c]</span> checks whether the
+host processor supports the high resolution profiling timer.
+StartVMTimer() will initialize vm_time_ms and set up a base start time.<br>
+
+</div>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+The JVM's <span style="font-family: monospace;">vmStart()</span>
+function <span style="font-family: monospace;">[j_vm.c]</span> will
+initialize this timing
+facility. Inside the byte code interpreting loop (the <span style="font-family: monospace;">run()</span> function),
+the timer is checked after every instruction and <span style="font-family: monospace;">VMTick()</span> (see below)
+is called when a tick has expired.<br>
+
+</div>
+
+
+<br>
+
+
+<h3><a class="mozTocH3" name="mozTocId955154"></a>
+2) Native Methods for Concurrency Support</h3>
+
+
+<div style="text-align: justify;">We added a "<span style="font-family: monospace;">uvic.posix</span>" package under "<span style="font-family: monospace;">../lib-source</span>" directory. For
+example, in our "<span style="font-family: monospace;">uvic.posix</span>"
+package, we provide a "Mutex" class
+defined as follows.<br>
+
+</div>
+
+
+<br>
+
+
+&nbsp;<span style="font-family: monospace;">&nbsp;&nbsp; public class
+Mutex {</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; public Mutex { ... }</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; public Lock() { ... }</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; public UnLock() { ... }</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; }</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+These are then supported by the following native methods:<br>
+
+
+<br>
+
+
+&nbsp;&nbsp; <span style="font-family: monospace;">int init_mutex();</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; void lock_mutex( int m );</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; void unlock_mutex( int m );</span><br>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+These native methods are unknown to the standard Java compiler. We must
+inform our static linker (ClassLinker.jar [in ../lib]) about these
+native methods. We add the following entries<br>
+
+</div>
+
+
+<br>
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; uvic/posix/Mutex.init_mutex</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; uvic/posix/Mutex.lock_mutex</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; uvic/posix/Mutex.unlock_mutex</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+<div style="text-align: justify;">
+in the ClassLinker.control file. A corresponding table for native
+methods is initialized in the "<span style="font-family: monospace;">native_func_ptr</span>"
+[at the end of
+<span style="font-family: monospace;">j_lang.c</span>]. Note the order
+of the entries in ClassLinker.control and
+"native_func_ptr" MUST be matched. This is how this JVM invokes the
+right native method by indexing into the corresponding entry. (N.B.
+Each time we modify the ClassLinker.control file, we need to update the
+ClassLinker.jar file by running "make" under "<span style="font-family: monospace;">../lib</span>" directory.)<br>
+
+</div>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+From the "<span style="font-family: monospace;">native_func_ptr</span>"
+table [in <span style="font-family: monospace;">j_lang.c</span>], we
+establish the
+following function pointers:<br>
+
+</div>
+
+
+<br>
+
+
+&nbsp;&nbsp; <span style="font-family: monospace;">uvic_posix_Mutex_init_mutex</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; uvic_posix_Mutex_lock_mutex</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; uvic_posix_Mutex_unlock_mutex</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+<div style="text-align: justify;">
+which then call the appropriate "real" native methods. For example, we
+have in "<span style="font-family: monospace;">j_thread.c</span>" the
+functions:<br>
+
+</div>
+
+
+<br>
+
+
+&nbsp;&nbsp; <span style="font-family: monospace;">int MutexInit();</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; void MutexLock( int m );</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; void MutexUnLock( int m );</span><br>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+As a result, the method call <span style="font-family: monospace;">m.Lock()</span>
+where m is of type Mutex will
+bind to our native C method "<span style="font-family: monospace;">MutexLock(m)</span>".<br>
+
+</div>
+
+
+<br>
+
+
+<h3><a class="mozTocH3" name="mozTocId357293"></a>
+3) Scheduling and Concurrency Primitives</h3>
+
+
+<div style="text-align: justify;">
+We have completely abandoned the original thread support in SimpleRTJ
+JVM. We modify "<span style="font-family: monospace;">struct thread_T</span>"
+[in <span style="font-family: monospace;">jvm.h</span>] to reflect
+what we need. We
+add the following scheduling primitives [in <span style="font-family: monospace;">j_thread.c, jcommon.h</span>]:<br>
+
+</div>
+
+
+<br>
+
+
+&nbsp;&nbsp;&nbsp; <span style="font-family: monospace;">typedef
+struct thread_T thread_t;</span><br style="font-family: monospace;">
+
+
+<br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; InitROSE();</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; AddReady( thread_t *p, bool front );</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; Dispatch();</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; PreemptIfNecessary()</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; Reschedule();&nbsp;&nbsp;&nbsp;&nbsp; /* same as
+yield() */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; AssignQuantum( thread_t *p );</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp; VMTick();</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+<div style="text-align: justify;">
+Our "new" concurrent primitives will use these scheduling primitives to
+interact with the JVM. Our scheduler maintains a global variable:<br>
+
+</div>
+
+
+<br>
+
+
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; thread_t&nbsp;
+*thr_active;&nbsp;&nbsp; </span><br style="font-family: monospace;">
+
+
+<br>
+
+
+which refers to the currently running thread, and a few internal
+critical variables:<br>
+
+
+<br>
+
+
+&nbsp;&nbsp; <span style="font-family: monospace;">thread_t&nbsp;
+*ready_q;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* the queue of READY threads */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; thread_t&nbsp; *dead_pool;&nbsp;&nbsp;&nbsp; /* a
+set of DEAD threads */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+&nbsp; thread_t&nbsp; threads[];&nbsp;&nbsp;&nbsp;&nbsp; /*
+the thread descriptor table */</span><br>
+
+
+<br>
+
+
+<div style="text-align: justify;">
+Similarly, we also maintain a few tables for Mutexes, Conditions and
+Semaphores. They'll be initialized when <span style="font-family: monospace;">InitROSE()</span> is called. The
+memory storage for these tables will be allocated inside the VM's heap.
+The allocation is done inside <span style="font-family: monospace;">vmStart()</span>
+[in <span style="font-family: monospace;">j_vm.c</span>].<br>
+
+</div>
+
+
+<br>
+
+
+<br>
+
+
+<h2><a class="mozTocH2" name="mozTocId823159"></a>
+Section 4 Configurating ROSE</h2>
+
+
+The file "jvm_cfg.h" contains the following limits.<br>
+
+
+<br>
+
+
+<span style="font-family: monospace;">
+&nbsp; /* standard JVM limits */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_REFERENCES&nbsp;&nbsp;&nbsp; 1024</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_STRINGS&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; 1024</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_HEAPSIZE&nbsp;&nbsp;&nbsp; &nbsp; 128000</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_TIMERS&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp; /* not
+used */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_EVENTS&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp; /* not
+used */</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+The important ones are:<br>
+
+
+<br>
+
+
+<span style="font-family: monospace;">
+#define MAX_THREADS&nbsp;&nbsp;&nbsp; &nbsp;64 /* include the main()
+thread */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_MUTEXES&nbsp;&nbsp;&nbsp; &nbsp;32 /* max # of Mutexes */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_CONDITIONS&nbsp; 32 /* max # of Conditions */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define MAX_PRI_LEVELS&nbsp; 4&nbsp; /* 0 is the highest */</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+<div style="text-align: justify;">
+Currently, we support four priority levels. The Java <span style="font-family: monospace;">main()</span> thread is
+created as a <span style="font-family: monospace;">SYSTEM</span> level
+thread by default. <span style="font-family: monospace;">SYSTEM</span>
+and <span style="font-family: monospace;">DAEMON</span> level
+threads are FCFS, REAL_TIME and USER level threads are time-sliced.<br>
+
+</div>
+
+
+<br>
+
+
+<span style="font-family: monospace;">
+&nbsp; /* priority levels */</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define SYSTEM_LEVEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define REAL_TIME_LEVEL&nbsp;&nbsp; 1</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define USER_LEVEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2</span><br style="font-family: monospace;">
+
+
+<span style="font-family: monospace;">
+#define DAEMON_LEVEL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3</span><br style="font-family: monospace;">
+
+
+<br>
+
+
+
+
+</body></html>

@@ -1,0 +1,186 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><h1>CSc 360 Assignment #3</h1>
+<p><strong>Due date: 11:59pm, Wednesday, 17 July 2013</strong></p>
+<hr>
+<hr>
+<h2>Objectives</h2>
+<p>In this assignment, you will:</p>
+<ol>
+<li>implement disk scheduling algorithms to improve the performance of disk access, and<br></li>
+<li>learn and implement a simple file system.</li>
+</ol>
+<hr>
+<h2>Problems</h2>
+<p>There are two parts to this assignment, a) and b). You should try them in the order listed
+below. There is no <em>C</em> coding in this assignment, solutions are done entirely in Java. For this reason, only rose.exe is provided for you (no C code).</p>
+<h3>a) Disk Scheduling Algorithms [25%]</h3>
+<p>In this part of the assignment we are going to practice disk 
+scheduling by implementing two scheduling algorithms. This will let you 
+quantitatively observe how much of an impact even the slightest 
+intelligent scheduling can have.</p>
+<p>One of the crudest disk scheduling algorithms is the <strong>First In, First Out (FIFO)</strong>
+ disk scheduling algorithm. In FIFO, requests are retrieved from the 
+disk in the order they arrive. There is no regard for the disk head or 
+other queued requests. As you might guess, this can lead to inefficient 
+results.</p>
+<p>The FIFO algorithm is implemented in <em>DiskFCFS.java</em> and will help you:</p>
+<ol>
+<li>See how to work with the DiskScheduler parent class which will ultimately help with the other scheduling algorithms.</li>
+<li>As a baseline to demonstrate and compare the effectiveness of your scheduling algorithms.</li>
+</ol>
+<p>The first algorithm you will impliment is the <strong>Shortest Seek Time First (SSTF)</strong>
+ algorithm. Before sending the next request, SSTF reviews all queued 
+requests and their distance to the disk head's current position. It then
+ sends the queued request with the minimum distance from the disk head. 
+An empty class file <em>DiskSSTF.java</em> is provided for you to fill out.</p>
+<p>The second scheduling algorithm you will impliment is the Elevator algorithm, or more specifically the simpler <strong>Circular Elevator algorithm (C-SCAN)</strong>.
+ The elevator algorithm resembles how a real life elevator operates. The
+ elevator in ECS will take a direction (up or down) and then service 
+floor requests along the way as it heads in that direction. In the <em>Elevator algorithm</em>,
+ the disk head moves in one direction and services the closest read and 
+write requests as it progresses in a direction. When the disk head <strong>will move to the end of the disk, even if there are no more requests in that direction.</strong>
+ When it reaches the end it switches its direction and continues the 
+same logic, but in the opposite direction. In C-SCAN, when the disk head
+ reaches the end it jumps all the way back to the beginning (ignoring 
+any requests on the way) and continues in the same direction. <strong>CSCAN only needs to maintain one direction</strong>. An empty class file <em>CSCAN.java</em> is provided for you to fill out.</p>
+<p>To implement these algorithms, you need to write the <em>insert()</em> and <em>remove()</em> functions.</p>
+<ul>
+<li>insert() is called anytime a <em>read()</em> or <em>write()</em> is called, and should be added into your internal data structure.</li>
+<li>remove() is called after <strong>current</strong> request has been completed, and the <strong>current</strong> request should be removed from your internal structure. </li>
+</ul>
+<p>One thing that is very important with these two functions is that the parent <em>DiskScheduler</em> assumes that after either of these functions are called, <strong>current</strong> will be set to something. <strong>current</strong> should only ever be set to <em>null</em> if there are no requests AND current should only be set in <em>insert()</em> if it is null. Picking a new current should be done in <em>remove()</em> otherwise.</p>
+<p>To help you get a feel for the code, I recommend reviewing files in this order (and running fcfs.bin):</p>
+<ol>
+<li><strong>lib-source/DiskRequest.java</strong>: The basic data structure that represents a request.</li>
+<li><strong>DiskRequester.java</strong>: This is what will be used in the tests and will be making the requests.</li>
+<li><strong>fcfs.java</strong>: The test case.</li>
+<li><strong>lib-source/DiskScheduler.java</strong>: Focus on the read(), write() and run() methods.</li>
+<li><strong>DiskFCFS.java</strong>: The FCFS implementation. The <strong>//showQ();</strong> commented out lines might be useful for you.</li>
+</ol>
+<p>The test case files <em>sstf.java</em> and <em>cscan.java</em> are provided for you.</p>
+<hr>
+<h3>b) File System Reading [45%]</h3>
+<p>A disk scheduler allows us to effectively read/write to a disk 
+concurrently, but what can we do with this? A major aspect of operating 
+systems is the file system -- <em>the organization/structure of how persistent data are retrieved and stored</em>.
+ The more common file system standards in use today are NTFS (Windows) 
+and ext4 (Linux). These systems support a whole host of features like 
+journaling, encryption, recovery, etc. To understand the basics of file 
+systems we will be implementing our own VERY crude file system that 
+resembles <em>ext</em> and works with <strong>inodes</strong>. </p>
+<p>Before we begin, it is important to hammer in that a file system is just <em>a structure <strong>imposed</strong> on a storage device by the operating system</em>.
+ A device like your HDD, USB flash stick, MP3 player, etc. are all just 
+blank memory. It is the operating system (or device creator in many 
+cases) that <strong><em>formats</em></strong> the memory into a file system like NTFS or ext. Some device manufactures even use their own custom internal file systems.</p>
+<p>File systems tend be structured into various structures and <strong>data blocks</strong>.
+ In practise, these blocks usually range in size, typically from 512 
+bytes to 32 kB. To keep things as simple and convenient as possible, our
+ blocks will be 4 bytes (i.e. a java <em>int</em> type or <em>int32</em>
+ in C). The total number of blocks in our file system is 190. Each block
+ is pointed to by a pointer typically 4 to 8 bytes. For simplicity, our 
+pointers will be 4 bytes (<em>int</em>) as well.</p>
+<p>In most file systems, the first blocks of the file system are 
+dedicated to booting the operating system. This aspect is so critical, 
+there are usually duplicates of these boot blocks in case of corruption.
+ Luckily, we do not need to boot; thus, the first blocks of the file 
+system will contain our "files". Following the ext model, all our files 
+are described by <strong>inodes</strong>. </p>
+<p>An inode is simply a data structure that contains metadata about the file AND <strong>pointers</strong> to blocks containing the files data (or <strong>data blocks</strong>).
+ The ext inode contains a lot of metadata like access times, access 
+privileges, system flags, etc. This inode also has 15-16 pointers. The 
+first 12 pointers point directly to data blocks. The 13th pointer points
+ to a data block <em>that contains only pointers to other data blocks</em>. It is called an <strong>indirect data block</strong>.
+ The 14th pointer is a double indirect block, which points to data block
+ full of pointers to indirect data blocks. I will let you guess what the
+ 15th and 16th pointers are :).</p>
+<p>To greatly simplify things, our inode will consist of only 12 pointers, all of which point directly to data blocks (<strong>NO indirect data block pointers</strong>).
+ In addition, the only metadata we will store is the file size (or total
+ number of data blocks used). There are a finite number of inodes 
+intially formatted for a file system. You can actually determine the 
+inode id for files by using <strong>ls -i</strong> -- try this out in 
+cygwin some time. The number of initialized inodes is usally quite vast,
+ but for our file system we will only have <strong>8</strong> inodes.</p>
+<p><img style="width: 480px; height: 450px;" alt="Our inode" src="assignment3_specs_files/inode2.png"></p>
+<p>In order for a file system to write files it needs to keep track of 
+which data blocks are free to write to. One mechanism to keep track of 
+free data blocks is by using a bitmask table. That is we set aside 
+several blocks (<em>int32</em>) and have each bit in the block represent
+ whether a block is free (0) or used (1). Our disk has 192 data blocks, 
+so we only need 6 blocks for the bitmap (i.e. 1 block = 32 bits and 32 *
+ 6 = 192). </p>
+<p>After the bitmap blocks are the actual 192 data blocks. All together 
+the disk is 302 in length. For a diagram of how the disk is made up see 
+the image below:</p>
+<p><img style="width: 200px; height: 600px;" alt="Our disk" src="assignment3_specs_files/disk.png"></p>
+<p>In this part of the assignment you will be implementing <strong>read_file</strong>, <strong>write_file</strong> and <strong>delete_file</strong>
+ methods for this file system. Completing these will also require 
+working with the data block bitmask to get and free available data 
+blocks. All of the code (apart from test case fiddling) is done in <em>code/b/FileSystem.java</em>.</p>
+<p>There are three very basic tests provided for you: <em>TestRead.java</em>, <em>TestDelete.java</em> and <em>TestWrite.java</em>.</p>
+<ol>
+<li>It is recommended you begin by implementing <em>read_file()</em> because it is just pointer following and does not involve working with the bitmask. 
+    You can test your implementation on TestRead.java.</li>
+<li>Next, you might want to complete <em>delete_file()</em>. Deleting a file is pretty straightforward, but requires you to complete <em>free_blocks()</em>. 
+    If you are new to bitwise/bitshift operations or could use a refresher, you might find this useful: <a href="http://docs.oracle.com/javase/tutorial/java/nutsandbolts/op3.html" title="Bitwise and Bit Shift Operators">Bitwise and Bit Shift Operators</a>. The TestDelete.java test case exists to help
+    test delete_file().</li>
+<li>Finish off with <em>write_file()</em>. Writing a file will require you to grab some free blocks, which will require you to complete <em>get_free_blocks()</em>. 
+    This too will require some bitwise/bitshift operations. Use TestWrite.java to test the basics of this.</li>
+</ol>
+<h4>Some misc notes:</h4>
+<ul>
+<li>Some of constants declared at the top of FileSystem.java should be useful for you.</li>
+<li>The <strong>disk.save(10)</strong> and <strong>disk.load(10)</strong> functions will save the disk to and load the disk from a file called "vdisk_010" respectively.</li>
+<li>I included a file <em>code/b/vdisk_001</em>. Although no test is written for it, you may or may not find it useful for writing a test case.</li>
+</ul>
+<hr>
+<h2>Support</h2>
+<p>A directory called "soln" contains binaries for:</p>
+<ul>
+<li><strong>sstf.bin</strong>: A solution to DiskSSTF.</li>
+<li><strong>cscan.bin</strong>: A solution to DiskCSCAN.</li>
+<li><strong>TestRead.bin</strong>: Solution to the read_file() case.</li>
+<li><strong>TestDelete.bin</strong>: Solution to the delete_file() test case.</li>
+<li><strong>TestWrite.bin</strong>: Solution to the write_file() test case.</li>
+<li><strong>rose.exe</strong>: identical to the one in the rose folder.</li>
+</ul>
+<p>Run each and see what they do.</p>
+<hr>
+<h2>Evaluation</h2>
+<p>The assignment is to be done in teams of two. Each member will receive the same mark. Each team
+member needs to understand all aspects of the assignment -- midterms will be based around
+understanding aspects of the assignments. It is <strong>HIGHLY</strong> recommended that team
+members do the assignment together.</p>
+<p>Your evaluation will be based mostly on the correctness of your solutions.
+Testing is one way to evaluate correctness. Code inspection is another.
+Even if your code runs, there may still be errors which can only be
+uncovered by inspection. Obscured programming tricks and habits will
+make programs harder to understand. Keep everything simple and elegant!</p>
+<ul>
+<li>Code [70%]</li>
+<li>Documentation [30%]<ul>
+<li>Doxygen and coding style (The solution should not be overly convoluted) [10%]</li>
+<li>Descriptions of tests performed [10%]</li>
+<li>Answer to questions [10%]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Submission</h2>
+<p>Answer the questions in doxygen. If you do not answer the questions on the mainpage, please provide a link from the mainpage
+to the answers for each question (helpful for the marker and you).</p>
+<p>Please include all necessary makefiles in each directory to generate 
+the executables and make sure that "make clean; make" will rebuild 
+your solutions to each part in each subdirectories. </p>
+<p>Submit a zipped file with the name <em>assignment3.tgz</em>.</p>
+<p>assign3 should keep the structure of</p>
+<ul>
+<li>assign3<ul>
+<li>code</li>
+<li>html</li>
+<li>Doxyfile</li>
+</ul>
+</li>
+</ul>
+<p>To do this go into cygwin and navigate to the path above assign2 and enter:</p>
+<pre><code>    tar czvf assignment3.tgz assign3<br></code></pre>
+<p>Please submit this file (<strong>assignment3.tgz</strong>) electronically through Connex before midnight on the due date. <strong>Only one team member needs to submit.</strong></p></body></html>

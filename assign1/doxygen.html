@@ -1,0 +1,43 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><h1>Doxygen</h1>
+<hr>
+<h2>Overview</h2>
+<p>Doxygen is a piece of software that generates a HTML website 
+documentation and API for your code base solely from your source code. 
+(<em>This is very similar to javadoc for those who may have worked with that</em>). Doxygen allows people to review your code in HTML
+and clusters together relevant pieces automatically. All that is required from the programmer's point-of-view is to include
+minimal markup for doxygen in your source code to be used during its processing. When using the <em>markdown notation</em>,
+ for example, the formatting of
+documentation is very simple and leads to pleasant results. In addition,
+ it is easy and natural to read in the actual source file.
+To demonstrate, this site was actually made using markdown -- <a target="_blank" href="http://webhome.csc.uvic.ca/%7Emcheng/360/summer.2013/doxygen.txt">see the source here.</a></p>
+<hr>
+<h2>Install</h2>
+<p>Download Doxygen from (A binary for Windows can be found if you scroll down):</p>
+<ul>
+<li><a target="_blank" href="http://www.stack.nl/%7Edimitri/doxygen/download.html">http://www.stack.nl/~dimitri/doxygen/download.html</a></li>
+</ul>
+<p>Install Doxygen using the default settings.</p>
+<hr>
+<h2>Test</h2>
+<ul>
+<li>Run <strong>doxywizard</strong>. It should be in the start menu or can be found in <em>C:\Program Files\doxygen\bin\doxywizard.exe</em>.</li><li>Choose
+ File-&gt;Open and select the provided default "Doxyfile" configuration 
+file, which should be at the same level as your "code" and "html" 
+directories.<br></li><li>Click on the <em>Run</em> tab. Click <em>Run doxygen</em>.</li>
+<li>When it has completed, click <em>Show HTML Output</em>.</li>
+</ul>
+<p>If everything worked correctly, your web browser should open with a nice doxygen generated website.</p>
+<hr>
+<h2>Basic Usage</h2>
+<ul>
+<li>For formatting, I recommend using <a href="http://www.stack.nl/%7Edimitri/doxygen/manual/markdown.html">Markdown notation</a>. It is very straightforward and readable.</li>
+<li>Change <strong>code/mainpage.md</strong> to edit your index page.</li>
+</ul>
+<p>To add comments to doxygen:</p>
+<p>For Classes (take notice of the '/**', not just '/*':)</p>
+<pre><code>/**<br> The first sentence will be used for the brief. Everything after this is more details. *Any text in between an asterisks like this will be in italics*. <br> Having **Two asterisks will make it bold**. You can go crazy and do ***italics and bold with three asterisks***.<br><br> Adding two new lines will create a new paragraph.<br>*/<br>public class Alice {<br></code></pre>
+<p>For Functions:</p>
+<pre><code>/**<br> Brief description in one sentence. More details.<br><br> And more details.<br><br> @param level: The level the function will run at.<br> @param quantum: The process' quantum of time in milliseconds.<br> @return: Whether run was successful or not.<br>*/<br>public bool run(int level, float quantum) {<br></code></pre>
+<p>For Members:</p>
+<pre><code>/**&lt; More detailed description of variable above. Take notice of the extra '&gt;'. */<br>public int fail = 5; ///&lt; Brief Description on the same line.<br></code></pre></body></html>

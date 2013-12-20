@@ -1,0 +1,217 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><h1>CSc 360 Assignment #2</h1>
+<p><strong>Due date: 11:55pm, Wednesday, 19 June 2013</strong></p>
+<hr>
+<hr>
+<h2>Objectives</h2>
+<p>In this assignment, you will learn the following issues:</p>
+<ol>
+<li>the priority issue in the classic readers/writers problem;</li>
+<li>synchronization issue in a multicast media stream problem;</li>
+<li>the design and implementation of POSIX Condition variables.</li>
+</ol>
+<hr>
+<h2>Problems</h2>
+<p>There are three parts to this assignment. Each is independent of the other.
+They are increasingly more difficult. You should try them in the order listed
+below. Part (a) and (b) will be done in Java. Part (c) will be done in C.</p>
+<h3>a) The Readers/Writers Problem [5%]</h3>
+<p>The Readers/Writers problem is defined <a href="http://en.wikipedia.org/wiki/Readers-writers_problem" target="_blank">here</a>.<br></p>
+<p>There is a shared data area used by many processes. Some processes only <span style="font-weight: bold;">read</span>
+the shared data, called the Readers; some only <span style="font-weight: bold;">write</span>, called the Writers.
+Any number of Readers may simultaneously read the shared data, i.e., they
+may overlap while reading. Only a single writer may write to the shared data.
+While writing, no other writers or readers are allowed to proceed. Thus,
+reading and writing, and writing and writing, are mutually exclusive. Only reading may proceed
+concurrently.</p>
+<p>There are commonly two cases to be considered:</p>
+<ol>
+<li>(<strong>Readers have priority</strong>) While reading, any number of readers may join in; 
+     as a result, if readers continuously overlap their readings, writers may
+     starve.</li>
+<li>(<strong>Writers have priority</strong>) Whenever a writer is waiting, it is allowed to
+     write as soon as possible. If writers wait continuously for writing,
+     readers may starve.</li>
+</ol>
+<p>In folder <em>code/a</em>, a partial solution is given where no preference is given to readers or
+writers. A single condition queue is used for both readers and writers.
+For part (a), you are required to modify code in order to enforce a <strong>writers priority</strong> using POSIX
+Mutexes and Condition variables.</p>
+<ol>
+<li>Look in folder <em>code/a</em>.<ul>
+<li><em>Database.java</em>: An interface for a thread-safe, reader-writer shared resource.</li>
+<li><em>DatabaseRW.java</em>: The shared resource; you will be modifying this for writer preference.</li>
+<li><em>Writer.java</em>: A thread that writes data to a Database.</li>
+<li><em>Reader.java</em>: A thread that reads data from a Database.</li>
+<li><em>TestBasicRW.java</em>: An initial test for showcasing 1 writer, 3 readers.</li>
+<li><em>TestPreference.java</em>: Test for writer preference.</li>
+</ul>
+</li>
+<li>Run <em>../soln/rose.exe 10 TestBasicRW.bin</em> and fiddle with it to get a feel for what is going on.</li>
+<li>Run <em>../soln/rose.exe 10 TestPreference.bin</em> to see how the readers are getting in.</li>
+<li>Run <em>cd ../soln; ./rose.exe 10 TestPreference.bin</em> to see what your solution should resemble
+    and how the writers are dominating order.</li>
+</ol>
+<p>You are only required to modify this solution (in <em>DatabaseRW.java</em>) to reflect
+a preference to writers. Your solution must use our Conditions and Mutexes
+supported by ROSE. <strong>REMEMBER</strong>: Use <em>code/soln/rose.exe</em> to test your solution -- 
+later you can use your part (c) rose.exe solution to test again.</p>
+<p><strong>HINT</strong>: In <em>Reader.java</em> and <em>Writer.java</em>, there are a few lines of code commented out.
+Uncommenting these out may or may not be useful to help you debug.</p>
+<hr>
+<h3>b) Synchronous Readers-Writer Problem [25%]</h3>
+<p>Consider the problem of multicasting a live media (e.g., MP3) stream to
+several users. Let us assume there is a single writer (or producer) which
+produces the media stream, and there are three readers (or consumers) which
+consume the data, i.e., playing the stream. </p>
+<p>There is a bounded buffer shared by all readers and a single writer. 
+Every item in the stream must be delivered in order and guaranteed.
+Thus, the buffer behaves like a FIFO queue. If the buffer is empty, 
+the readers must wait; if the buffer is full, the writer must wait.</p>
+<p>In a single-producer-single-consumer bounded buffer, the consumer 
+reads an item and immediately advances the "out" pointer to the next item.
+But, in a single-producer-multiple-consumer bounded buffer for streaming
+media, the consumers (or readers) must be synchronized on their reads.
+That is, reading is synchronized; a reader/consumer is not allowed to read
+the next item until all readers have read the current item. A faster reader
+must wait for a slower reader. This way the timing of playing back the media
+stream is synchronized in all readers.</p>
+<p>For part (b) you are going to implement your solution in folder <strong>code/b</strong>.</p>
+<ul>
+<li><em>SBuffer.java</em>: An interface for a synchronized buffer.</li>
+<li><em>BoundedBuffer.java</em>: Thread safe, synchronized bounded buffer; you will be 
+    adding to this to make it synchronize with multiple readers.</li>
+<li><em>Producer.java</em>: Very similar to Writer in part (a); there is some random delay 
+   included to crudely simulate writing time.</li>
+<li><em>Consumer.java</em>: Very similar to Reader in part (a), but Consumer requests the 
+   the index of the data it wants to read. Its output includes this to help w/ debugging.</li>
+<li><em>TestP1C1.java</em>: An initial test for one producer and one consumer.</li>
+<li><em>TestP1C3.java</em>: A test to verify that readers are synchronized.</li>
+</ul>
+<p>Your solution will be to modify <strong>BoundedBuffer.java</strong> and ensure that all readers read 
+the same item before advancing.</p>
+<p>Use <em>TestP1C3.java</em> to test your code. Again, there are some commented out lines of code
+in <em>Producer.java</em> and <em>Consumer.java</em> that may be helpful for debugging.</p>
+<hr>
+<h3>c) POSIX Condition Variables [40%]</h3>
+<p>The POSIX standard defines Mutexes and Condition variables to support the
+concept of Monitors. There are three primitives defined on Mutexes:</p>
+<pre><code>    public class Mutex {<br>        public Mutex() {...} ;<br>        public void Lock() {...} ;<br>        public void UnLock() {...} ;<br>    }<br></code></pre>
+<p>A Mutex is basically a binary semaphore. It is initally free (or unlocked).
+The operations Lock() and UnLock() are indivisible. Lock() waits until the
+Mutex is free, then locks it. UnLock() unlocks the Mutex, and as a result
+may resume a waiting process. A Mutex has ownership; only the process
+that locks the Mutex may unlock it.</p>
+<p>There are four primitives defined on Condition variables:</p>
+<pre><code>    public class Condition {<br>        public Condition() {...};<br>        public Wait( Mutex m ) {...};<br>        public Signal() {...};<br>        public Broadcast() {...};<br>    }<br></code></pre>
+<p>Condition variables MUST be used in conjuction with Mutexes. 
+A Condition variable is associated with a predicate (a condition that 
+may be true or false). The testing of the predicate requires the 
+reading of some shared variables. (Note: We use Condition to denote
+a variable of type <strong>Condition</strong>. We use <em>condition</em> to denote the predicate
+associated with a Condition variable.)</p>
+<p>For example, "buffer is not full" is a <em>condition</em>. This requires a test
+"count &lt; MAX" where count is a shared integer variable.  Therefore, testing 
+this <em>condition</em> is a critical section.  We need a Mutex to protect 
+this critical section.  If the <em>condition</em> is evaluated to be false, 
+the process MUST then wait until the <em>condition</em> has changed. </p>
+<p>For example,</p>
+<pre><code>    private Mutex m;<br>    private Condition nonfull; // count &lt; MAX<br><br>    m.Lock();<br>    // if buffer is full, then wait until not full<br>    while (count == MAX) nonfull.Wait(m);<br>    m.UnLock();<br></code></pre>
+<p>The <em>condition</em> we desire is "not full", i.e., count &lt; MAX. 
+The test "count == MAX" is true if "not full" does not hold. 
+As a result, we must wait until the <em>condition</em> "not full" has changed. 
+For this type of synchronization, we need Condition variables.</p>
+<p>A Condition variable is conceptually a queue. The process waits on a 
+Condition will be blocked in the Condition queue. Later, when some other 
+process signals this Condition, one of the processes in the Condition 
+queue will be resumed. To maintain fairness, we insist the Condition queue
+be first-come-first-served.</p>
+<p>After gaining the lock to a Mutex, if this process then waits on a Condition
+variable, then in order to allow other processes to proceed, this process MUST
+unlock the Mutex and enter the Condition queue at the same time. Thus,
+the c.Wait(m) call includes a parameter "m" which is the Mutex.</p>
+<p>When a process is resumed from a c.Signal(), it MUST relock its Mutex and
+resume after the c.Wait(m) statement. As a result, it is guaranteed to
+be safe inside its critical section.</p>
+<p>Signal() on a Condition variable resumes a single process. Broadcast()
+resumes all waiting processes. To prevent starvation, the ordering of
+resumption MUST follow the same ordering of waiting. That is, a process that
+waits first will be the first process to be resumed after a Broacast().
+A process resumed from a Condition Signal() or Broadcast() must relock
+the enclosing Mutex. To prevent "barging", we insist that processes
+resumed from a Condition have priority of locking the Mutex over other
+processes which just wait for the Mutex.</p>
+<p>For part (c), you are required to implement the Wait(), Signal() and
+Broadcast() primitives in C inside ROSE as specified above. Specifically,
+you are only required to fill the details in <em>j_thread.c</em> for:</p>
+<ul>
+<li><em>void CondWait()</em></li>
+<li><em>void CondSignal()</em></li>
+<li><em>void CondBroadcast()</em></li>
+</ul>
+<h3>Hints:</h3>
+<p>Study the <em>MutexLock()</em> and <em>MutexUnLock()</em>, <em>SemWait()</em> and
+<em>SemSignal()</em> code carefully. You need to understand these well in order
+to implement the Condition variables primitives (i.e. your solution will 
+likely resemble aspects of their solution).</p>
+<p>There is a folder <strong>code/c</strong>, with a bin that can be used to run a basic
+Condition.broadcast() test.</p>
+<p>Take note of the thread states in jvm.h:</p>
+<ul>
+<li><em>BLOCK_ON_MUTEX</em></li>
+<li><em>BLOCK_ON_COND</em></li>
+</ul>
+<p>You will probably need to use them.</p>
+<p>In <em>jvm.h</em>, the structure <strong>thread_T</strong> defines an additional field
+called <strong>mutex_t *relock</strong>. This is very important! You'll need it.</p>
+<hr>
+<h2>Support</h2>
+<p>A directory called "soln" contains binaries for:</p>
+<ul>
+<li><strong>TestBasicRW.bin</strong> and <strong>TestPrefence.bin</strong>: Bin solutions for Part (a).</li>
+<li><strong>TestP1C1.bin</strong> and <strong>TestP1C3.bin</strong>: Bin solutions for Part (b).</li>
+<li><strong>rose.exe</strong>: a solution to Part (c) and should be used for intial testing of Part (a) and (b).</li>
+</ul>
+<p>Run everything and see what they do.</p>
+<p>For part a and b, please use our solution "rose.exe" to test your Java
+code. After completing Part c, you may then test your Part a and b using 
+your solution to Part c.</p>
+<hr>
+<h2>Evaluation</h2>
+<p>The assignment is to be done in teams of two. Each member will receive the same mark. Each team
+member needs to understand all aspects of the assignment -- midterms will be based around
+understanding aspects of the assignments. It is <strong>HIGHLY</strong> recommended that team
+members do the assignment together.</p>
+<p>Your evaluation will be based mostly on the correctness of your solutions.
+Testing is one way to evaluate correctness. Code inspection is another.
+Even if your code runs, there may still be errors which can only be
+uncovered by inspection. Obscured programming tricks and habits will
+make programs harder to understand. Keep everything simple and elegant!</p>
+<ul>
+<li>Code [70%]</li>
+<li>Documentation [30%]<ul>
+<li>Doxygen and coding style (The solution should not be overly convoluted) [10%]</li>
+<li>Descriptions of tests performed [10%]</li>
+<li>Answer to questions [10%]</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Submission</h2>
+<p>Answer the questions in doxygen. If you do not answer the questions on the mainpage, please provide a link from the mainpage
+to the answers for each question (helpful for the marker and you).</p>
+<p>Please include all necessary makefiles in each directory to generate 
+the executables and make sure that "make clean; make" will rebuild 
+your solutions to each part in each subdirectories. </p>
+<p>Submit a zipped file with the name <em>assignment2.tgz</em>.</p>
+<p>assign2 should keep the structure of</p>
+<ul>
+<li>assign2<ul>
+<li>code/</li>
+<li>html/</li><li>Doxyfile<br></li>
+</ul>
+</li>
+</ul>
+<p>To do this go into cygwin and navigate to the path above assign2 and enter:</p>
+<pre><code>    tar czvf assignment2.tgz assign2<br></code></pre>
+<p>Please submit this file (<strong>assignment2.tgz</strong>) electronically through Connex before midnight on the due date. <strong>Only one team member needs to submit.</strong></p></body></html>

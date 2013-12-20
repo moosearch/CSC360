@@ -1,0 +1,78 @@
+# Doxygen #
+ ---
+ 
+## Overview ##
+
+Doxygen is a piece of software that generates a HTML website documentation and API for your code base solely from your source code. 
+(*This is very similar to javadoc for those who may have worked with that*). Doxygen allows people to review your code in HTML
+and clusters together relevant pieces automatically. All that is required from the programmer's point-of-view is to include
+minimal markup for doxygen in your source code to be used during its processing. When using the *markdown notation*, for example, the formatting of
+documentation is very simple and leads to pleasant results. In addition, it is easy and natural to read in the actual source file.
+To demonstrate, this site was actually made using markdown -- [see the source here.](doxygen.txt)
+
+ ---
+
+## Install ##
+
+Download Doxygen from (A binary for Windows can be found if you scroll down):
+
+ - [http://www.stack.nl/~dimitri/doxygen/download.html](http://www.stack.nl/~dimitri/doxygen/download.html)
+ 
+Install Doxygen using the default settings.
+
+ ---
+
+## Test ##
+
+ - Run **doxywizard**. It should be in the start menu or can be found in *C:\\Program Files\\doxygen\bin\\doxywizard.exe*.
+ - Specify the working directory as *C:/cygwin/home/<username\>/assign1* where <username\> is where you installed.
+ - Change project name to *Assignment1*.
+ - Set scan for source code directory to *C:/cygwin/home/<username\>/assign1/**code***.
+ - Set destination directory to *C:/cygwin/home/<username\>/assign1*. Click *Next*.
+ - Optimize for Java.
+ - Uncheck the *Latex* box.
+ - Click on the *Expert* tab. 
+   - Goto *Topics -\> Project*. Check *JAVADOC_AUTOBRIEF*. Uncheck *OPTIMIZE_OUTPUT_FOR_JAVA*.
+   - Goto *Topics -\> Source Browser*. Check *SOURCE_BROWSER*. Uncheck *STRIP_CODE_COMMENTS*. Uncheck *REFERENCES_LINK_SOURCE*.
+ - Click on the *Run* tab. Click *Run doxygen*.
+ - When it has completed, click *Show HTML Output*.
+ 
+If everything worked correctly, your web browser should open with a nice doxygen generated website. The generated documentation can be found at
+*C:/cygwin/home/<username\>/assign1/html*.
+
+ ---
+
+## Basic Usage ##
+
+ - For formatting, I recommend using [Markdown notation](http://www.stack.nl/~dimitri/doxygen/manual/markdown.html). It is very straightforward and readable.
+ - Change **code/mainpage.md** to edit your index page.
+
+To add comments to doxygen:
+
+For Classes (take notice of the '/\*\*', not just '/\*':)
+
+	/**
+	 The first sentence will be used for the brief. Everything after this is more details. *Any text in between an asterisks like this will be in italics*. 
+	 Having **Two asterisks will make it bold**. You can go crazy and do ***italics and bold with three asterisks***.
+	 
+	 Adding two new lines will create a new paragraph.
+	*/
+	public class Alice {
+	
+For Functions:
+
+	/**
+	 Brief description in one sentence. More details.
+	 
+	 And more details.
+	 
+	 @param level: The level the function will run at.
+	 @param quantum: The process' quantum of time in milliseconds.
+	 @return: Whether run was successful or not.
+	*/
+	public bool run(int level, float quantum) {
+
+For Members:
+
+	/**< More detailed description of variable above. Take notice of the extra '>'. */
+	public int fail = 5; ///< Brief Description on the same line. 
